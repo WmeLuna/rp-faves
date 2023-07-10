@@ -1,26 +1,25 @@
 import { Injector, Logger, webpack } from "replugged";
+import { cfg, defaultSettings } from "./config";
 
 const inject = new Injector();
-const logger = Logger.plugin("PluginTemplate");
+const logger = Logger.plugin("RP-Faves");
 
 export async function start(): Promise<void> {
-  const typingMod = await webpack.waitForModule<{
-    startTyping: (channelId: string) => void;
-  }>(webpack.filters.byProps("startTyping"));
-  const getChannelMod = await webpack.waitForModule<{
-    getChannel: (id: string) => {
-      name: string;
-    };
-  }>(webpack.filters.byProps("getChannel"));
-
-  if (typingMod && getChannelMod) {
-    inject.instead(typingMod, "startTyping", ([channel]) => {
-      const channelObj = getChannelMod.getChannel(channel);
-      logger.log(`Typing prevented! Channel: #${channelObj?.name ?? "unknown"} (${channel}).`);
-    });
-  }
+  inject.after(
+    //@ts-expect-error ugh
+    webpack.getByProps("getUnreadPrivateChannelIds"),
+    "getUnreadPrivateChannelIds",
+    (args, res, instance) => {
+      const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
+      if (cfg.get("unreadFirst", defaultSettings.unreadFirst))
+        return [...res, ...(userChannelIds as [])];
+      return [...(userChannelIds as []), ...res];
+    },
+  );
 }
 
 export function stop(): void {
   inject.uninjectAll();
 }
+
+export { Settings } from "./Settings";

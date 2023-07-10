@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable consistent-return */
 import { common, components } from "replugged";
 import { cfg, defaultSettings } from "./config";
 
@@ -6,15 +8,34 @@ const {
   ContextMenu: { MenuItem },
 } = components;
 
-export function menuPatch(data, menu) {
+function move(input: any[], from: number, to: number) {
+  const elm = input.splice(from, 1)[0];
+  input.splice(to, 0, elm);
+}
+
+function moveUp(id: string) {
   const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
-  console.log(data, menu);
+  const currentIndex = userChannelIds.indexOf(id);
+  if (currentIndex === 0) return;
+  const changedUserChannelIds: any = move(userChannelIds, currentIndex, currentIndex - 1);
+  cfg.set("userChannelIds", changedUserChannelIds);
+}
+
+function moveDown(id: string) {
+  const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
+  const currentIndex = userChannelIds.indexOf(id);
+  if (currentIndex >= userChannelIds.length - 1) return;
+  const changedUserChannelIds: any = move(userChannelIds, currentIndex, currentIndex + 1);
+  cfg.set("userChannelIds", changedUserChannelIds);
+}
+
+export function menuPatch(data: any, _menu: any): React.ReactElement {
+  const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
   if (
-    !data?.channel?.isDM() ||
-    !data?.channel?.isGroupDM() ||
+    (!data?.channel?.isDM() && !data?.channel?.isGroupDM()) ||
     (data?.channel?.isGroupDM() && data?.user)
   )
-    return;
+    return <></>;
 
   if (!userChannelIds.includes(data.channel.id))
     return (
@@ -46,25 +67,4 @@ export function menuPatch(data, menu) {
       <MenuItem label="Move Down" id="move-down" action={() => moveDown(data.channel.id)} />
     </MenuItem>
   );
-}
-
-function move(input) {
-  const elm = input.splice(from, 1)[0];
-  input.splice(to, 0, elm);
-}
-
-function moveUp(id) {
-  const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
-  const currentIndex = userChannelIds.findIndex(id);
-  if (currentIndex === 0) return;
-  const changedUserChannelIds = move(userChannelIds, currentIndex, currentIndex - 1);
-  cfg.set("userChannelIds", changedUserChannelIds);
-}
-
-function moveDown(id) {
-  const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
-  const currentIndex = userChannelIds.findIndex(id);
-  if (currentIndex >= currentIndex.length - 1) return;
-  const changedUserChannelIds = move(userChannelIds, currentIndex, currentIndex + 1);
-  cfg.set("userChannelIds", changedUserChannelIds);
 }

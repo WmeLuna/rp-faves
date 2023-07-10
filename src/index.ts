@@ -1,21 +1,26 @@
-import { Injector, Logger, webpack } from "replugged";
+import { Injector, types, webpack } from "replugged";
 import { cfg, defaultSettings } from "./config";
-
+import { menuPatch } from "./patch";
 const inject = new Injector();
-const logger = Logger.plugin("RP-Faves");
 
 export async function start(): Promise<void> {
   inject.after(
     //@ts-expect-error ugh
     webpack.getByProps("getUnreadPrivateChannelIds"),
     "getUnreadPrivateChannelIds",
-    (args, res, instance) => {
+    (_args, _res, _instance) => {
       const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
       if (cfg.get("unreadFirst", defaultSettings.unreadFirst))
-        return [...res, ...(userChannelIds as [])];
-      return [...(userChannelIds as []), ...res];
+        return [..._res, ...(userChannelIds as [])];
+      return [...(userChannelIds as []), ..._res];
     },
   );
+  inject.utils.addMenuItem(types.ContextMenuTypes.GdmContext, (data, menu) => {
+    return menuPatch(data, menu);
+  });
+  inject.utils.addMenuItem(types.ContextMenuTypes.UserContext, (data, menu) => {
+    return menuPatch(data, menu);
+  });
 }
 
 export function stop(): void {

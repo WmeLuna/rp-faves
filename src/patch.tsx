@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable consistent-return */
-import { common, components } from "replugged";
+import { common, components, util } from "replugged";
 import { cfg, defaultSettings } from "./config";
+import { updateServerList } from "./utils";
 
 const { React } = common;
 const {
@@ -11,6 +12,7 @@ const {
 function move(input: any[], from: number, to: number) {
   const elm = input.splice(from, 1)[0];
   input.splice(to, 0, elm);
+  updateServerList();
 }
 
 function moveUp(id: string) {
@@ -46,6 +48,7 @@ export function menuPatch(data: any, _menu: any): React.ReactElement {
           const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
           userChannelIds.push(data.channel.id);
           cfg.set("userChannelIds", userChannelIds);
+          updateServerList();
         }}
       />
     );
@@ -61,6 +64,7 @@ export function menuPatch(data: any, _menu: any): React.ReactElement {
             "userChannelIds",
             userChannelIds.filter((id) => id !== data.channel.id),
           );
+          updateServerList();
         }}
       />
       <MenuItem label="Move Up" id="move-up" action={() => moveUp(data.channel.id)} />

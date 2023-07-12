@@ -1,7 +1,7 @@
 import { Injector, types, webpack } from "replugged";
 import { cfg, defaultSettings } from "./config";
 import { menuPatch } from "./patch";
-const inject = new Injector();
+export const inject = new Injector();
 
 export async function start(): Promise<void> {
   inject.after(

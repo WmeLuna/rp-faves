@@ -15,12 +15,20 @@ export async function start(): Promise<void> {
       return [...(userChannelIds as []), ..._res];
     },
   );
-  inject.utils.addMenuItem(types.ContextMenuTypes.GdmContext, (data, menu) => {
-    return menuPatch(data, menu);
-  });
-  inject.utils.addMenuItem(types.ContextMenuTypes.UserContext, (data, menu) => {
-    return menuPatch(data, menu);
-  });
+  inject.utils.addMenuItem(
+    types.ContextMenuTypes.GdmContext,
+    (data) => {
+      return menuPatch(data);
+    },
+    4,
+  );
+  inject.utils.addMenuItem(
+    types.ContextMenuTypes.UserContext,
+    (data) => {
+      return menuPatch(data);
+    },
+    4,
+  );
 }
 
 export function stop(): void {

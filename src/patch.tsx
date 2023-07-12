@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable consistent-return */
-import { common, components, util } from "replugged";
+import { common, components } from "replugged";
 import { cfg, defaultSettings } from "./config";
 import { updateServerList } from "./utils";
 
 const { React } = common;
 const {
-  ContextMenu: { MenuItem },
+  ContextMenu: { MenuItem, MenuSeparator },
 } = components;
 
 function move(input: any[], from: number, to: number) {
@@ -19,19 +17,19 @@ function moveUp(id: string) {
   const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
   const currentIndex = userChannelIds.indexOf(id);
   if (currentIndex === 0) return;
-  const changedUserChannelIds: any = move(userChannelIds, currentIndex, currentIndex - 1);
-  cfg.set("userChannelIds", changedUserChannelIds);
+  move(userChannelIds, currentIndex, currentIndex - 1);
+  cfg.set("userChannelIds", userChannelIds);
 }
 
 function moveDown(id: string) {
   const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
   const currentIndex = userChannelIds.indexOf(id);
   if (currentIndex >= userChannelIds.length - 1) return;
-  const changedUserChannelIds: any = move(userChannelIds, currentIndex, currentIndex + 1);
-  cfg.set("userChannelIds", changedUserChannelIds);
+  move(userChannelIds, currentIndex, currentIndex + 1);
+  cfg.set("userChannelIds", userChannelIds);
 }
 
-export function menuPatch(data: any, _menu: any): React.ReactElement {
+export function menuPatch(data: any): React.ReactElement {
   const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
   if (
     (!data?.channel?.isDM() && !data?.channel?.isGroupDM()) ||
@@ -55,9 +53,13 @@ export function menuPatch(data: any, _menu: any): React.ReactElement {
 
   return (
     <MenuItem label="Favorite Utils" id="favorite-utils">
+      <MenuItem label="Move Up" id="move-up" action={() => moveUp(data.channel.id)} />
+      <MenuItem label="Move Down" id="move-down" action={() => moveDown(data.channel.id)} />
+      <MenuSeparator></MenuSeparator>
       <MenuItem
         label="Remove From Favorite"
         id="remove-from-favorite"
+        color="danger"
         action={() => {
           const userChannelIds = cfg.get("userChannelIds", defaultSettings.userChannelIds);
           cfg.set(
@@ -67,8 +69,6 @@ export function menuPatch(data: any, _menu: any): React.ReactElement {
           updateServerList();
         }}
       />
-      <MenuItem label="Move Up" id="move-up" action={() => moveUp(data.channel.id)} />
-      <MenuItem label="Move Down" id="move-down" action={() => moveDown(data.channel.id)} />
     </MenuItem>
   );
 }

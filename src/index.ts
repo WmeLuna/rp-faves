@@ -1,9 +1,10 @@
 import { Injector, types, webpack } from "replugged";
 import { cfg, defaultSettings } from "./config";
-import { menuPatch } from "./patch";
+import { getStyles, menuPatch } from "./patch";
+import { addCSSRule, removeCSSRule } from "./utils";
 export const inject = new Injector();
 
-export async function start(): Promise<void> {
+export function start(): void {
   inject.after(
     //@ts-expect-error ugh
     webpack.getByProps("getUnreadPrivateChannelIds"),
@@ -29,10 +30,12 @@ export async function start(): Promise<void> {
     },
     4,
   );
+  addCSSRule(getStyles());
 }
 
 export function stop(): void {
   inject.uninjectAll();
+  removeCSSRule();
 }
 
 export { Settings } from "./Settings";

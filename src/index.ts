@@ -21,7 +21,7 @@ export function start(): void {
     (data) => {
       return menuPatch(data);
     },
-    4,
+    2,
   );
   inject.utils.addMenuItem(
     types.ContextMenuTypes.UserContext,
